@@ -5,10 +5,19 @@ pygame_sdl2.import_as_pygame()
 import pygame
 from pygame.locals import *
 from robot import Robot
+from garden import Garden
 
 pygame.font.init()
 
-
+def load_pygame_img(file_name):
+    """Load img is a function that uses PIL to load a pygame image"""
+    img = Image.open(file_name)
+    mode = img.mode
+    size = img.size
+    data = img.tostring()
+    #pygame_img = pygame.image.fromstring(data, size, mode) #Load the sheet
+    pygame_img = pygame.image.load(file_name)
+    return pygame_img
 
 SCREEN_X = 1080
 SCREEN_Y = 720
@@ -22,9 +31,6 @@ LEN_SPRT_Y=100
 #This is the length of the sprite
 
 
-
-
-                    
 
 def one_robot_three_gardens_and_one_customer():
     world = World()
@@ -53,13 +59,6 @@ class Customer:
         self.sprite = load_pygame_img('consumer.png')
         self.x = x
         self.y = y
-
-class Garden:
-    def __init__(self,x,y):
-        self.sprite = load_pygame_img('orange_garden.png')
-        self.x = x
-        self.y = y
-        self.hp = 10
 
 class World:
     def __init__(self):
@@ -143,7 +142,7 @@ class World:
         customer_front = font.render('customer_sensor front: {}'.format(self.robots[0].sense_customers('front')), 0, pygame.Color(255,255,255))
         customer_left = font.render('customer_sensor left: {}'.format(self.robots[0].sense_customers('left')), 0, pygame.Color(255,255,255))
         customer_right = font.render('customer_sensor right: {}'.format(self.robots[0].sense_customers('right')), 0, pygame.Color(255,255,255))
-        collisions = font.render('Num of collisions: {}'.format(len(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
+        collisions = font.render('Num of garden collisions: {}'.format(self.robots[0].on_garden(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
         self.screen.blit(garden_front, (800, 620))
         self.screen.blit(garden_left, (800, 640))
         self.screen.blit(garden_right, (800, 660))

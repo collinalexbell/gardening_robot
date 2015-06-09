@@ -5,6 +5,7 @@ pygame_sdl2.import_as_pygame()
 import pygame
 from pygame.locals import *
 from gardenbotnn import Garden_Bot_NN
+from garden import Garden
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
@@ -101,12 +102,12 @@ class Robot:
         return False
 
     def on_garden(self, collisions):
+        gardens = self.world.get_gardens
         for collision in collisions:
-            if collision[0] == self or collision[1] == self:
+            if (collision[0] == self and type(collision[1])) == Garden or (collision[1] == self and type(collision[0]) == Garden):
                 return 1
-            else:
-                return 0
 
+        return 0
 
     def get_unit_direction(self, direction):
         if direction == 'front':
@@ -143,7 +144,6 @@ class Robot:
 
 
     def sense_garden(self, direction):
-
         unit_direction = self.get_unit_direction(direction)
         gardens = self.world.get_gardens()
         sum = 0
