@@ -1,0 +1,3 @@
+
+class Garden_Bot:
+
