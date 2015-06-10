@@ -14,19 +14,9 @@ def load_pygame_img(file_name):
     pygame_img = pygame.image.load(file_name)
     return pygame_img
 
-class Garden:
-    def __init__(self,x,y,world):
-        self.world = world
-        self.sprite = load_pygame_img('orange_garden.png')
+
+class Customer:
+    def __init__(self,x,y):
+        self.sprite = load_pygame_img('consumer.png')
         self.x = x
         self.y = y
-        self.hp = 10
-
-    def remove(self):
-        self.world.gardens.remove(self)
-        self.world.objects.remove(self)
-
-    def __del__(self):
-        print('Garden was harvested')
-        
-

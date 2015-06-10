@@ -6,6 +6,7 @@ import pygame
 from pygame.locals import *
 from robot import Robot
 from garden import Garden
+from customer import Customer
 
 pygame.font.init()
 
@@ -54,11 +55,6 @@ def detect_collision(objects):
     return rv
 
 
-class Customer:
-    def __init__(self,x,y):
-        self.sprite = load_pygame_img('consumer.png')
-        self.x = x
-        self.y = y
 
 class World:
     def __init__(self):
@@ -114,7 +110,7 @@ class World:
                             self.robots[0].move()
 
     def add_garden(self, x, y):
-        new_garden = Garden(x,y)
+        new_garden = Garden(x,y, self)
         self.gardens.append(new_garden)
         self.objects.append(new_garden)
 
@@ -143,6 +139,8 @@ class World:
         customer_left = font.render('customer_sensor left: {}'.format(self.robots[0].sense_customers('left')), 0, pygame.Color(255,255,255))
         customer_right = font.render('customer_sensor right: {}'.format(self.robots[0].sense_customers('right')), 0, pygame.Color(255,255,255))
         collisions = font.render('Num of garden collisions: {}'.format(self.robots[0].on_garden(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
+        fullness = font.render('Robot Fullness: {}'.format(self.robots[0].sense_fullness()), 0, pygame.Color(255, 255, 255))
+        money = font.render('Robot Money: {}'.format(self.robots[0].on_customer(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
         self.screen.blit(garden_front, (800, 620))
         self.screen.blit(garden_left, (800, 640))
         self.screen.blit(garden_right, (800, 660))
@@ -150,6 +148,8 @@ class World:
         self.screen.blit(customer_left, (800, 540))
         self.screen.blit(customer_right, (800, 560))
         self.screen.blit(collisions, (800, 680))
+        self.screen.blit(fullness, (800, 700))
+        self.screen.blit(money, (800, 600))
 
 
         

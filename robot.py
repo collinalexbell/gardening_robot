@@ -6,6 +6,7 @@ import pygame
 from pygame.locals import *
 from gardenbotnn import Garden_Bot_NN
 from garden import Garden
+from customer import Customer
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
@@ -29,6 +30,10 @@ class Robot:
         self.sprite = self.sprites['right_s']
         self.direction = 'right'
         self.nnet = Garden_Bot_NN()
+        self.num_of_fruit = 0
+        self.money = 0
+        self.CARRYING_CAPACITY = 2
+
 
     def make_sprites(self, robot_sprites):
         
@@ -87,7 +92,18 @@ class Robot:
         self.direction = direction
         self.blit_queue.put({'d_pos':(0,0), 'sprite':self.direction + '_s'})
 
+    def convert_turn_output_to_cardinal_direction(self, output_direction):
+        unit_direction = self.get_unit_direction(output_direction)
+        if unit_direction == (0,-1):
+            direction = 'up'
+        if unit_direction == (0, 1):
+            direction = 'down'
+        if unit_direction == (1, 0):
+            direction = 'right'
+        if unit_direction == (-1, 0):
+            direction = 'left'
 
+        return direction
 
         
 
@@ -103,11 +119,26 @@ class Robot:
 
     def on_garden(self, collisions):
         gardens = self.world.get_gardens
+        gardens_collected = 0
         for collision in collisions:
-            if (collision[0] == self and type(collision[1])) == Garden or (collision[1] == self and type(collision[0]) == Garden):
-                return 1
+            if collision[0] == self and type(collision[1]) == Garden:
+                if self.num_of_fruit < self.CARRYING_CAPACITY:
+                    self.collect_garden(collision[1])
+                    gardens_collected += 1
+            if collision[1] == self and type(collision[0]) == Garden:
+                if self.num_of_fruit < self.CARRYING_CAPACITY:
+                    self.collect_garden(collision[0])
+                    gardens_collected += 1
 
-        return 0
+        return gardens_collected
+
+    def on_customer(self, collisions):
+        for collision in collisions:
+            if collision[0] == self and type(collision[1]) == Customer and self.num_of_fruit > 0:
+                self.sell_fruit(collision[1])
+            if collision[0] == self and type(collision[1]) == Customer and self.num_of_fruit > 0:
+                self.sell_fruit(collision[0])
+        return self.money
 
     def get_unit_direction(self, direction):
         if direction == 'front':
@@ -171,4 +202,14 @@ class Robot:
                 sum +=  (math.pow(1 - y_distance/line_of_sight, 2))
         return sum
 
+    def collect_garden(self, garden):
+        self.num_of_fruit += 1
+        garden.remove()
+
+    def sell_fruit(self, customer):
+        self.num_of_fruit -= 1
+        self.money += 1
+
+    def sense_fullness(self):
+        return self.num_of_fruit/self.CARRYING_CAPACITY
 
