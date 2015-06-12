@@ -1,4 +1,5 @@
 from random import random
+import random as rnd
 
 class Garden_Bot_Edge:
     def __init__(self, fr, weight, speed):
@@ -113,10 +114,9 @@ class Garden_Bot_NN:
                 #print(neuron)
                 neuron['stimulus'] = round(neuron['stimulus'] - neuron['decay'], 5)
                 if neuron['stimulus'] < 0:
-                    neruon['stimulus'] = 0
+                    neuron['stimulus'] = 0
             self.compute_stimulus(neuron)
-            if neuron['output'] == 1:
-                neuron['output'] = 0
+            neuron['output'] = 0
             if neuron['stimulus'] >= neuron['threshold'] and neuron['threshold'] > 0:
                 neuron['output'] = 1
                 neuron['stimulus'] = 0
@@ -129,6 +129,40 @@ class Garden_Bot_NN:
         for edge in o['in_edges']:
             d_stimulus += edge.fr['output'] * edge.weight
         o['stimulus'] += d_stimulus
+
+
+def mutate_dna(dna):
+    percent_of_mutations = .005
+    alpha = .001
+    for neuron in dna:
+        if random() < percent_of_mutations:
+            print('mutation')
+            neuron[0] += neuron[0] * rnd.uniform(-1*alpha, alpha)
+            neuron[0] = abs(neuron[0])
+        if random() < percent_of_mutations:
+            print('mutation')
+            neuron[1] += neuron[0] * rnd.uniform(-1*alpha, alpha)
+            neuron[1] = abs(neuron[1])
+        for in_node in neuron[2]:
+            if random() < percent_of_mutations:
+                print('mutation')
+                in_node[0] += in_node[0] * rnd.uniform(-1*alpha, alpha)
+            if random() < percent_of_mutations:
+                print('mutation')
+                in_node[1] += in_node[1] * rnd.uniform(-1*alpha, alpha)
+                in_node[1] = abs(in_node[1])
+
+
+
+    #print(dna)
+    return dna
+
+if __name__ == '__main__':
+    nnet = Garden_Bot_NN()
+    dna = nnet.encode_dna()
+    print(dna)
+    print('\n\n')
+    mutate_dna(nnet.encode_dna())
 
 
             

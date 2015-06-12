@@ -5,6 +5,7 @@ pygame_sdl2.import_as_pygame()
 import pygame
 from pygame.locals import *
 from gardenbotnn import Garden_Bot_NN
+from gardenbotnn import mutate_dna
 from garden import Garden
 from customer import Customer
 
@@ -20,7 +21,7 @@ def load_pygame_img(file_name):
 
 
 class Robot:
-    def __init__(self, x, y, world):
+    def __init__(self, x, y, world, robot = False):
         self.world = world
         robot_sprites = load_pygame_img('robot.png')
         self.sprites = self.make_sprites(robot_sprites)
@@ -29,10 +30,14 @@ class Robot:
         self.blit_queue = queue.Queue()
         self.sprite = self.sprites['right_s']
         self.direction = 'right'
+        if robot:
+            self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
         self.nnet = Garden_Bot_NN()
         self.num_of_fruit = 0
+        self.num_of_fruit_ever = 0
         self.money = 0
         self.CARRYING_CAPACITY = 2
+        self.unique_locations = set()
 
 
     def make_sprites(self, robot_sprites):
@@ -73,7 +78,7 @@ class Robot:
         if self.direction == 'down':
             unit = (0, 1)
 
-        print("{},{}".format(unit[0], unit[1]))
+        #print("{},{}".format(unit[0], unit[1]))
         if self.blit_queue.empty():
             self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
             self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
@@ -114,7 +119,18 @@ class Robot:
             self.x += nex['d_pos'][0]
             self.y += nex['d_pos'][1]
             self.sprite = self.sprites[nex['sprite']]
+            if self.x < 0:
+                self.x = self.world.screenx
+            if self.x > self.world.screenx:
+                self.x = 0
+            if self.y < 0:
+                self.y = self.world.screeny
+            if self.y > self.world.screeny:
+                self.y = 0
+            
+            self.add_to_unique_locations(self.x, self.y)
             return True
+        self.think()
         return False
 
     def on_garden(self, collisions):
@@ -204,6 +220,7 @@ class Robot:
 
     def collect_garden(self, garden):
         self.num_of_fruit += 1
+        self.num_of_fruit_ever += 1
         garden.remove()
 
     def sell_fruit(self, customer):
@@ -212,4 +229,64 @@ class Robot:
 
     def sense_fullness(self):
         return self.num_of_fruit/self.CARRYING_CAPACITY
+
+    def think(self):
+       self.process_inputs()
+       self.nnet.run_net()
+       self.process_outputs()
+
+
+    def process_inputs(self):
+        #Clock needs to fire every tick. Set the stimulus to threshold + 1
+        self.nnet.neurons['clock']['stimulus'] = self.nnet.neurons['clock']['threshold'] + 1
+
+        #Garden Neurons
+        self.nnet.neurons['garden_left']['stimulus'] += self.sense_garden('left')
+        self.nnet.neurons['garden_right']['stimulus'] += self.sense_garden('right')
+        self.nnet.neurons['garden_front']['stimulus'] += self.sense_garden('front')
+
+        #Customer Neurons
+        self.nnet.neurons['customer_left']['stimulus'] += self.sense_customers('left')
+        self.nnet.neurons['customer_right']['stimulus'] += self.sense_customers('right')
+        self.nnet.neurons['customer_front']['stimulus'] += self.sense_customers('front')
+
+        #Fruit Level
+        self.nnet.neurons['food_level']['stimulus'] += self.sense_fullness()
+
+    def process_outputs(self):
+        left_turn = self.nnet.neurons['left_turn']['output']
+        right_turn = self.nnet.neurons['right_turn']['output']
+        tail_motor = self.nnet.neurons['tail_motor']['output']
+
+        #IF we didnt turn and motor is activated
+        if tail_motor:
+            self.move()
+
+        turn_xor = left_turn ^ right_turn 
+
+        
+        if left_turn and turn_xor and not tail_motor:
+            turn_output = self.convert_turn_output_to_cardinal_direction('left')
+            #print('turn_output: {}'.format(turn_output))
+            self.turn(turn_output)
+        if right_turn and turn_xor and not tail_motor:
+            turn_output = self.convert_turn_output_to_cardinal_direction('right')
+            #print('turn_output: {}'.format(turn_output))
+            self.turn(turn_output)
+
+
+    def add_to_unique_locations(self, x, y):
+        self.unique_locations.add((x,y))
+    def num_of_unique_locations(self):
+        return len(self.unique_locations)
+
+    def get_fitness(self):
+        return self.num_of_unique_locations()/1000 + self.num_of_fruit_ever + self.money
+
+        
+        
+
+        
+
+
 

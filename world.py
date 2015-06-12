@@ -7,6 +7,10 @@ from pygame.locals import *
 from robot import Robot
 from garden import Garden
 from customer import Customer
+import collections
+import copy
+import time
+
 
 pygame.font.init()
 
@@ -33,9 +37,10 @@ LEN_SPRT_Y=100
 
 
 
-def one_robot_three_gardens_and_one_customer():
+def ten_robots_three_gardens_and_one_customer():
     world = World()
-    world.add_robot(0,0)
+    for i in range(1000):
+        world.add_robot(0,0)
     world.add_garden(200, 200)
     world.add_garden(300, 300)
     world.add_garden(400, 400)
@@ -51,7 +56,8 @@ def detect_collision(objects):
             if obj1_rect.colliderect(obj2_rect):
                 rv.append((objects[i], objects[j]))
     if len(rv)>0:
-        print(rv[0])
+        #print(rv[0])
+        pass
     return rv
 
 
@@ -60,6 +66,8 @@ class World:
     def __init__(self):
         pygame.init()
         self.robots = [] 
+        self.screenx = SCREEN_X
+        self.screeny = SCREEN_Y
         self.gardens = []
         self.customers = []
         self.screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y)) #Create the screen
@@ -73,6 +81,7 @@ class World:
     def run(self):
 
         self.running = True
+        self.time = time.time()
         while self.running:
             self.clock.tick(60)
             self.screen.fill((0,0,0))
@@ -81,9 +90,15 @@ class World:
                 self.screen.blit(garden.sprite, (garden.x, garden.y), self.backdrop)
             for robot in self.robots:
                 robot.act()
+            for robot in self.robots[0:10]:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
-                self.print_debug()
             pygame.display.flip()
+            if time.time() - self.time >= 60:
+                self.mutate_robots()
+                self.time = time.time()
+                
+
+
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -106,6 +121,8 @@ class World:
                         if event.key == pygame.K_d:
                             self.robots[0].turn('right')
                             print('right')
+                        if event.key == pygame.K_m:
+                            self.mutate_robots()
                         if event.key == pygame.K_SPACE:
                             self.robots[0].move()
 
@@ -130,6 +147,7 @@ class World:
         self.robots.append(new_robot)
         self.objects.append(new_robot)
 
+
     def print_debug(self):
         font =  pygame.font.Font(None, 16)
         garden_front = font.render('garden_sensor front: {}'.format(self.robots[0].sense_garden('front')), 0, pygame.Color(255,255,255))
@@ -151,10 +169,42 @@ class World:
         self.screen.blit(fullness, (800, 700))
         self.screen.blit(money, (800, 600))
 
+    def mutate_robots(self):
+        #Save top 50% and mutate the rest
+        top_robots = {}
+        scores = []
+        for robot in self.robots:
+            try:
+                top_robots[str(robot.get_fitness())].append(robot)
+            except:
+                top_robots[str(robot.get_fitness())] = [robot]
+            scores.append(robot.get_fitness())
+        robots_to_keep = []
+        scores = sorted(scores)
+        scores = scores[::-1]
+        scores = scores[:int(len(self.robots)/2)]
+        print(scores)
+        for score in scores:
+            robots_to_keep.append(top_robots[str(score)].pop(0))
+        self.robots = copy.copy(robots_to_keep)
+        print('fromKeep {}'.format(len(self.robots)))
+        for robot in robots_to_keep:
+            self.robots.append(Robot(0,0,self,robot))
+        self.time = time.time()
+
+        print('afterKeep {}'.format(len(self.robots)))
+
+
+
+        
+
+
+
+
 
         
 
 
 if __name__ == '__main__':
-    one_robot_three_gardens_and_one_customer()
+    ten_robots_three_gardens_and_one_customer()
 
