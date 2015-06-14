@@ -92,7 +92,7 @@ class World:
             for garden in (self.gardens + self.customers):
                 self.screen.blit(garden.sprite, (garden.x, garden.y), self.backdrop)
             for robot in self.robots:
-                robot.act()
+                robot.act() ## This should be parallelized
                 robot.on_garden(collisions)
                 robot.on_customer(collisions)
             for robot in self.robots[0:10]:
@@ -201,9 +201,11 @@ class World:
             self.add_robot(0,0, new_bot)
         print('fromKeep {}'.format(len(self.robots)))
         for robot in robots_to_keep:
-            for i in range(9):
+            for i in range(8):
                 self.robots.append(Robot(0,0,self,robot))
         self.time = time.time()
+        for i in range(3):
+            self.add_robot(0,0)
 
         print('afterKeep {}'.format(len(self.robots)))
 
