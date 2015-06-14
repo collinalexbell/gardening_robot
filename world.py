@@ -39,12 +39,14 @@ LEN_SPRT_Y=100
 
 def ten_robots_three_gardens_and_one_customer():
     world = World()
-    for i in range(1000):
+    for i in range(30):
         world.add_robot(0,0)
     world.add_garden(200, 200)
     world.add_garden(300, 300)
     world.add_garden(400, 400)
-    world.add_customer(200, 400)
+    world.add_customer(800, 600)
+    world.add_customer(200,200)
+    world.add_customer(800, 100)
     world.run()
 
 def detect_collision(objects):
@@ -86,10 +88,13 @@ class World:
             self.clock.tick(60)
             self.screen.fill((0,0,0))
             self.handle_events()
+            collisions = detect_collision(self.objects)
             for garden in (self.gardens + self.customers):
                 self.screen.blit(garden.sprite, (garden.x, garden.y), self.backdrop)
             for robot in self.robots:
                 robot.act()
+                robot.on_garden(collisions)
+                robot.on_customer(collisions)
             for robot in self.robots[0:10]:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
@@ -142,8 +147,11 @@ class World:
     def get_customers(self):
         return self.customers
 
-    def add_robot(self, x, y):
-        new_robot = Robot(x,y,self)
+    def add_robot(self, x, y, robot = 0):
+        if robot:
+            new_robot = robot
+        else:
+            new_robot = Robot(x,y,self)
         self.robots.append(new_robot)
         self.objects.append(new_robot)
 
@@ -182,14 +190,19 @@ class World:
         robots_to_keep = []
         scores = sorted(scores)
         scores = scores[::-1]
-        scores = scores[:int(len(self.robots)/2)]
+        scores = scores[:3]
         print(scores)
         for score in scores:
             robots_to_keep.append(top_robots[str(score)].pop(0))
-        self.robots = copy.copy(robots_to_keep)
+        self.robots = []
+        for robot in robots_to_keep:
+            new_bot = Robot(0,0,self)
+            new_bot.load_dna(robot.nnet.encode_dna())
+            self.add_robot(0,0, new_bot)
         print('fromKeep {}'.format(len(self.robots)))
         for robot in robots_to_keep:
-            self.robots.append(Robot(0,0,self,robot))
+            for i in range(9):
+                self.robots.append(Robot(0,0,self,robot))
         self.time = time.time()
 
         print('afterKeep {}'.format(len(self.robots)))

@@ -39,6 +39,9 @@ class Robot:
         self.CARRYING_CAPACITY = 2
         self.unique_locations = set()
 
+    def load_dna(self, dna):
+        self.nnet = Garden_Bot_NN(dna)
+
 
     def make_sprites(self, robot_sprites):
         

@@ -3,6 +3,7 @@ import pygame_sdl2
 pygame_sdl2.import_as_pygame()
 import pygame
 from pygame.locals import *
+from random import randint
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
@@ -23,8 +24,14 @@ class Garden:
         self.hp = 10
 
     def remove(self):
+        print(len(self.world.gardens))
         self.world.gardens.remove(self)
         self.world.objects.remove(self)
+        print(len(self.world.gardens))
+        new_x = randint(0, self.world.screenx)
+        new_y = randint(0, self.world.screeny)
+        self.world.add_garden(new_x, new_y)
+        print(len(self.world.gardens))
 
     def __del__(self):
         print('Garden was harvested')
