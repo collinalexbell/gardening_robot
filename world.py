@@ -10,6 +10,7 @@ from customer import Customer
 import collections
 import copy
 import time
+import threading
 
 
 pygame.font.init()
@@ -89,10 +90,21 @@ class World:
             self.screen.fill((0,0,0))
             self.handle_events()
             collisions = detect_collision(self.objects)
+            threads = []
             for garden in (self.gardens + self.customers):
                 self.screen.blit(garden.sprite, (garden.x, garden.y), self.backdrop)
+            #Start threads to make the robots think and act
             for robot in self.robots:
-                robot.act() ## This should be parallelized
+                t = threading.Thread(target = robot.act)
+                threads.append(t)
+                t.start()
+
+            #Wait until all threads have finished before...
+            for thread in threads:
+                thread.join()
+            
+            #Sensing gardens and whatnot
+            for robot in self.robots:
                 robot.on_garden(collisions)
                 robot.on_customer(collisions)
             for robot in self.robots[0:10]:
