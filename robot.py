@@ -140,11 +140,11 @@ class Robot:
         gardens = self.world.get_gardens
         gardens_collected = 0
         for collision in collisions:
-            if collision[0] == self and type(collision[1]) == Garden:
+            if collision[0] == self and type(collision[1]) == Garden and collision[1] in self.world.gardens:
                 if self.num_of_fruit < self.CARRYING_CAPACITY:
                     self.collect_garden(collision[1])
                     gardens_collected += 1
-            if collision[1] == self and type(collision[0]) == Garden:
+            if collision[1] == self and type(collision[0]) == Garden and collision[0] in self.world.gardens:
                 if self.num_of_fruit < self.CARRYING_CAPACITY:
                     self.collect_garden(collision[0])
                     gardens_collected += 1
