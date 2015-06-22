@@ -26,10 +26,9 @@ class Garden:
     def remove(self):
         print(len(self.world.gardens))
         self.world.gardens.remove(self)
-        self.world.objects.remove(self)
         print(len(self.world.gardens))
-        new_x = randint(0, self.world.screenx)
-        new_y = randint(0, self.world.screeny)
+        new_x = randint(0, self.world.screenx-100)
+        new_y = randint(0, self.world.screeny-100)
         self.world.add_garden(new_x, new_y)
         print(len(self.world.gardens))
 

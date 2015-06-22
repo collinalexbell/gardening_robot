@@ -1,4 +1,7 @@
-import os, sys, math, queue
+import os
+import sys
+import math
+import queue
 from PIL import Image
 import pygame_sdl2
 pygame_sdl2.import_as_pygame()
@@ -11,6 +14,7 @@ from customer import Customer
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
+
     img = Image.open(file_name)
     mode = img.mode
     size = img.size
@@ -19,17 +23,49 @@ def load_pygame_img(file_name):
     pygame_img = pygame.image.load(file_name)
     return pygame_img
 
+class Robot_Sprite:
+    """A singleton sprite loader that caches the robot sprites at various angles"""
+    class _Robot_Sprite:
+        def __init__(self, file_path):
+            self.sprite = load_pygame_img('ball_bot.png')
+            self.sprites = self._make_sprites()
+
+        def _make_sprites(self):
+            sprites = []
+            for i in range(360):
+                sprites.append(pygame.transform.rotate(self.sprite, i))
+            return sprites
+
+        def get_sprite_at_angle(self, angle):
+            #Get any angle to the nearest degree
+            return self.sprites[int(round(angle%360))]
+
+
+    instance = None
+
+    def __init__(self, file_path):
+        #Load a single sprite
+        if not Robot_Sprite.instance:
+            Robot_Sprite.instance = Robot_Sprite._Robot_Sprite(file_path)
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __setattr__(self, name):
+        return setattr(self.instance, name)
+
 
 class Robot:
     def __init__(self, x, y, world, robot = False):
         self.world = world
-        robot_sprites = load_pygame_img('robot.png')
-        self.sprites = self.make_sprites(robot_sprites)
+        self.sprite_object = Robot_Sprite('ball_bot.png')
+        self.sprite = self.sprite_object.get_sprite_at_angle(0)
         self.x = x
         self.y = y
+        self.real_x = float(x)
+        self.real_y = float(y)
         self.blit_queue = queue.Queue()
-        self.sprite = self.sprites['right_s']
-        self.direction = 'right'
+        self.direction_in_deg = 0
         if robot:
             self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
         self.nnet = Garden_Bot_NN()
@@ -39,117 +75,26 @@ class Robot:
         self.CARRYING_CAPACITY = 2
         self.unique_locations = set()
 
+
     def load_dna(self, dna):
         self.nnet = Garden_Bot_NN(dna)
 
 
-    def make_sprites(self, robot_sprites):
-        
-        sprites = {}
-        sprites['down_s'] = robot_sprites.subsurface(pygame.Rect(0,0,35,55))
-        sprites['down_l'] = robot_sprites.subsurface(pygame.Rect(38,0,35,55))
-        sprites['down_r'] = robot_sprites.subsurface(pygame.Rect(79,0,35,55))
-        sprites['left_s'] = robot_sprites.subsurface(pygame.Rect(0,56,35,55))
-        sprites['left_l'] = robot_sprites.subsurface(pygame.Rect(38,56,35,55))
-        sprites['left_r'] = robot_sprites.subsurface(pygame.Rect(79,56,35,55))
-        sprites['right_s'] = robot_sprites.subsurface(pygame.Rect(0,111,35,55))
-        sprites['right_l'] = robot_sprites.subsurface(pygame.Rect(38,111,35,55))
-        sprites['right_r'] = robot_sprites.subsurface(pygame.Rect(79,111,35,55))
-        sprites['up_s'] = robot_sprites.subsurface(pygame.Rect(3,166,35,55))
-        sprites['up_l'] = robot_sprites.subsurface(pygame.Rect(40,166,35,55))
-        sprites['up_r'] = robot_sprites.subsurface(pygame.Rect(82,166,35,55))
+    def move(self, step_length):
+        x_step =  math.cos(math.radians(self.direction_in_deg))  * step_length
+        self.real_x += x_step
 
+#       Assuming that angles are on a standard x-y plane not a graphics plane
+        y_step = math.sin(math.radians(self.direction_in_deg)) * step_length
+        self.real_y -= y_step
+        self.x=int(self.real_x)
+        self.y=int(self.real_y)
 
-        self.up_steps = [(35,0),(75,0)]
-        self.left_standing = (0, 60)
-        self.left_steps = [(35,60),(75,60)]
-        self.right_standing = (0, 115)
-        self.right_steps = [(35,115),(75,115)]
-        self.up_standing = (0, 165)
-        self.up_steps = [(35,165),(75,165)]
+    def turn(self, deg):
+        self.direction_in_deg += deg
+        new_deg = self.direction_in_deg
+        self.sprite = self.sprite_object.get_sprite_at_angle(new_deg)
 
-        return sprites
-
-    def move(self):
-        step_size = 2
-        if self.direction == 'up':
-            unit = (0, -1)
-        if self.direction == 'left':
-            unit = (-1,0)
-        if self.direction == 'right':
-            unit = (1, 0)
-        if self.direction == 'down':
-            unit = (0, 1)
-
-        #print("{},{}".format(unit[0], unit[1]))
-        if self.blit_queue.empty():
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_l'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-            self.blit_queue.put({'d_pos':(unit[0]*step_size, unit[1]*step_size), 'sprite':self.direction + '_r'})
-
-    def turn(self, direction):
-        self.direction = direction
-        self.blit_queue.put({'d_pos':(0,0), 'sprite':self.direction + '_s'})
-
-    def convert_turn_output_to_cardinal_direction(self, output_direction):
-        unit_direction = self.get_unit_direction(output_direction)
-        if unit_direction == (0,-1):
-            direction = 'up'
-        if unit_direction == (0, 1):
-            direction = 'down'
-        if unit_direction == (1, 0):
-            direction = 'right'
-        if unit_direction == (-1, 0):
-            direction = 'left'
-
-        return direction
-
-        
-
-    def act(self):
-        if(not self.blit_queue.empty()):
-            nex = self.blit_queue.get()
-            #print('{},{}'.format(self.x, self.y))
-            self.x += nex['d_pos'][0]
-            self.y += nex['d_pos'][1]
-            self.sprite = self.sprites[nex['sprite']]
-            if self.x < 0:
-                self.x = self.world.screenx
-            if self.x > self.world.screenx:
-                self.x = 0
-            if self.y < 0:
-                self.y = self.world.screeny
-            if self.y > self.world.screeny:
-                self.y = 0
-            
-            self.add_to_unique_locations(self.x, self.y)
-            return True
-        self.think()
-        return False
-
-    def on_garden(self, collisions):
-        gardens = self.world.get_gardens
-        gardens_collected = 0
-        for collision in collisions:
-            if collision[0] == self and type(collision[1]) == Garden and collision[1] in self.world.gardens:
-                if self.num_of_fruit < self.CARRYING_CAPACITY:
-                    self.collect_garden(collision[1])
-                    gardens_collected += 1
-            if collision[1] == self and type(collision[0]) == Garden and collision[0] in self.world.gardens:
-                if self.num_of_fruit < self.CARRYING_CAPACITY:
-                    self.collect_garden(collision[0])
-                    gardens_collected += 1
-
-        return gardens_collected
 
     def on_customer(self, collisions):
         for collision in collisions:
@@ -158,39 +103,6 @@ class Robot:
             if collision[0] == self and type(collision[1]) == Customer and self.num_of_fruit > 0:
                 self.sell_fruit(collision[0])
         return self.money
-
-    def get_unit_direction(self, direction):
-        if direction == 'front':
-            if self.direction == 'up':
-                unit_direction = (0,-1)
-            if self.direction == 'left':
-                unit_direction = (-1,0)
-            if self.direction == 'right':
-                unit_direction = (1, 0)
-            if self.direction == 'down':
-                unit_direction = (0,1)
-
-        if direction == 'left':
-            if self.direction == 'up':
-                unit_direction = (-1,0)
-            if self.direction == 'left':
-                unit_direction = (0,1)
-            if self.direction == 'right':
-                unit_direction = (0, -1)
-            if self.direction == 'down':
-                unit_direction = (1, 0)
-
-        if direction == 'right':
-            if self.direction == 'up':
-                unit_direction = (1,0)
-            if self.direction == 'left':
-                unit_direction = (0,-1)
-            if self.direction == 'right':
-                unit_direction = (0, 1)
-            if self.direction == 'down':
-                unit_direction = (-1, 0)
-        return unit_direction
-
 
 
     def sense_garden(self, direction):
@@ -207,6 +119,7 @@ class Robot:
                 sum +=  (math.pow(1 - y_distance/line_of_sight, 2))
         return sum
 
+
     def sense_customers(self, direction):
         unit_direction = self.get_unit_direction(direction)
         customers = self.world.get_customers()
@@ -221,19 +134,22 @@ class Robot:
                 sum +=  (math.pow(1 - y_distance/line_of_sight, 2))
         return sum
 
-    def collect_garden(self, garden):
+
+    def collect_garden(self):
         self.num_of_fruit += 1
         self.num_of_fruit_ever += 1
-        garden.remove()
 
-    def sell_fruit(self, customer):
-        self.num_of_fruit -= 1
-        self.money += 1
+
+    def sell_fruit(self):
+        self.money = self.num_of_fruit
+        self.num_of_fruit = 0
+
 
     def sense_fullness(self):
         return self.num_of_fruit/self.CARRYING_CAPACITY
 
-    def think(self):
+
+    def think_and_act(self):
        self.process_inputs()
        self.nnet.run_net()
        self.process_outputs()
@@ -256,40 +172,40 @@ class Robot:
         #Fruit Level
         self.nnet.neurons['food_level']['stimulus'] += self.sense_fullness()
 
+
     def process_outputs(self):
         left_turn = self.nnet.neurons['left_turn']['output']
         right_turn = self.nnet.neurons['right_turn']['output']
         tail_motor = self.nnet.neurons['tail_motor']['output']
 
         #IF we didnt turn and motor is activated
-        if tail_motor:
-            self.move()
 
-        turn_xor = left_turn ^ right_turn 
+        turn_xor = left_turn ^ right_turn
 
-        
-        if left_turn and turn_xor and not tail_motor:
-            turn_output = self.convert_turn_output_to_cardinal_direction('left')
-            #print('turn_output: {}'.format(turn_output))
-            self.turn(turn_output)
-        if right_turn and turn_xor and not tail_motor:
-            turn_output = self.convert_turn_output_to_cardinal_direction('right')
-            #print('turn_output: {}'.format(turn_output))
-            self.turn(turn_output)
+        if tail_motor and not turn_xor:
+            self.move(10)
+
+        if left_turn and turn_xor:
+            self.turn(10)
+        if right_turn and turn_xor:
+            self.turn(10)
 
 
     def add_to_unique_locations(self, x, y):
         self.unique_locations.add((x,y))
+
     def num_of_unique_locations(self):
         return len(self.unique_locations)
 
+
     def get_fitness(self):
-        return self.num_of_unique_locations()/1000 + self.num_of_fruit_ever + self.money
+        return  self.num_of_fruit_ever + self.money
 
-        
-        
 
-        
+
+
+
+
 
 
 

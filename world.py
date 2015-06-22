@@ -28,7 +28,7 @@ def load_pygame_img(file_name):
 SCREEN_X = 1080
 SCREEN_Y = 720
 
-SPRT_RECT_X=0  
+SPRT_RECT_X=0
 SPRT_RECT_Y=0
 #This is where the sprite is found on the sheet
 
@@ -42,9 +42,7 @@ def ten_robots_three_gardens_and_one_customer():
     world = World()
     for i in range(30):
         world.add_robot(0,0)
-    world.add_garden(200, 200)
-    world.add_garden(300, 300)
-    world.add_garden(400, 400)
+    world.add_garden(400, 200)
     world.add_customer(800, 600)
     world.add_customer(200,200)
     world.add_customer(800, 100)
@@ -68,7 +66,7 @@ def detect_collision(objects):
 class World:
     def __init__(self):
         pygame.init()
-        self.robots = [] 
+        self.robots = []
         self.screenx = SCREEN_X
         self.screeny = SCREEN_Y
         self.gardens = []
@@ -89,39 +87,36 @@ class World:
             self.clock.tick(60)
             self.screen.fill((0,0,0))
             self.handle_events()
-            collisions = detect_collision(self.objects)
-            threads = []
+            processes = []
             for garden in (self.gardens + self.customers):
                 self.screen.blit(garden.sprite, (garden.x, garden.y), self.backdrop)
             #Start threads to make the robots think and act
             for robot in self.robots:
-                t = threading.Thread(target = robot.act)
-                threads.append(t)
-                t.start()
+                p = threading.Thread(target = robot.think_and_act)
+                processes.append(p)
+                p.start()
 
             #Wait until all threads have finished before...
-            for thread in threads:
-                thread.join()
-            
+            for process in processes:
+                process.join()
+
             #Sensing gardens and whatnot
-            for robot in self.robots:
-                robot.on_garden(collisions)
-                robot.on_customer(collisions)
+            self.detect_and_act_on_robot_garden_collisions()
+            self.detect_and_act_on_robot_customer_collisions()
+
             for robot in self.robots[0:10]:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
             if time.time() - self.time >= 60:
                 self.mutate_robots()
                 self.time = time.time()
-                
-
 
 
     def handle_events(self):
         for event in pygame.event.get():
                 if event.type == QUIT:
-                   self.running = False 
-     
+                   self.running = False
+
                 # handle user input
                 elif event.type == pygame.KEYDOWN:
                     print('keydown')
@@ -134,19 +129,18 @@ class World:
                         if event.key == pygame.K_s:
                             self.robots[0].turn('down')
                         if event.key == pygame.K_a:
-                            self.robots[0].turn('left')
+                            self.robots[0].turn(10)
                         if event.key == pygame.K_d:
-                            self.robots[0].turn('right')
+                            self.robots[0].turn(-10)
                             print('right')
                         if event.key == pygame.K_m:
                             self.mutate_robots()
                         if event.key == pygame.K_SPACE:
-                            self.robots[0].move()
+                            self.robots[0].move(10)
 
     def add_garden(self, x, y):
         new_garden = Garden(x,y, self)
         self.gardens.append(new_garden)
-        self.objects.append(new_garden)
 
     def get_gardens(self):
         return self.gardens
@@ -154,7 +148,6 @@ class World:
     def add_customer(self, x, y):
         new_customer = Customer(x, y)
         self.customers.append(new_customer)
-        self.objects.append(new_customer)
 
     def get_customers(self):
         return self.customers
@@ -165,29 +158,7 @@ class World:
         else:
             new_robot = Robot(x,y,self)
         self.robots.append(new_robot)
-        self.objects.append(new_robot)
 
-
-    def print_debug(self):
-        font =  pygame.font.Font(None, 16)
-        garden_front = font.render('garden_sensor front: {}'.format(self.robots[0].sense_garden('front')), 0, pygame.Color(255,255,255))
-        garden_left = font.render('garden_sensor left: {}'.format(self.robots[0].sense_garden('left')), 0, pygame.Color(255,255,255))
-        garden_right = font.render('garden_sensor right: {}'.format(self.robots[0].sense_garden('right')), 0, pygame.Color(255,255,255))
-        customer_front = font.render('customer_sensor front: {}'.format(self.robots[0].sense_customers('front')), 0, pygame.Color(255,255,255))
-        customer_left = font.render('customer_sensor left: {}'.format(self.robots[0].sense_customers('left')), 0, pygame.Color(255,255,255))
-        customer_right = font.render('customer_sensor right: {}'.format(self.robots[0].sense_customers('right')), 0, pygame.Color(255,255,255))
-        collisions = font.render('Num of garden collisions: {}'.format(self.robots[0].on_garden(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
-        fullness = font.render('Robot Fullness: {}'.format(self.robots[0].sense_fullness()), 0, pygame.Color(255, 255, 255))
-        money = font.render('Robot Money: {}'.format(self.robots[0].on_customer(detect_collision(self.objects))), 0, pygame.Color(255, 255, 255))
-        self.screen.blit(garden_front, (800, 620))
-        self.screen.blit(garden_left, (800, 640))
-        self.screen.blit(garden_right, (800, 660))
-        self.screen.blit(customer_front, (800, 520))
-        self.screen.blit(customer_left, (800, 540))
-        self.screen.blit(customer_right, (800, 560))
-        self.screen.blit(collisions, (800, 680))
-        self.screen.blit(fullness, (800, 700))
-        self.screen.blit(money, (800, 600))
 
     def mutate_robots(self):
         #Save top 50% and mutate the rest
@@ -218,18 +189,43 @@ class World:
         self.time = time.time()
         for i in range(3):
             self.add_robot(0,0)
+        for garden in self.gardens:
+            garden.remove()
 
         print('afterKeep {}'.format(len(self.robots)))
 
+    def detect_and_act_on_robot_garden_collisions(self):
+        remove_these_gardens = []
+        for robot in self.robots:
+            for garden in self.gardens:
+                robot_rect = Rect(robot.x, robot.y, robot.sprite.get_width(), robot.sprite.get_height())
+                garden_rect = Rect(garden.x, garden.y, garden.sprite.get_width(), garden.sprite.get_height())
+                if robot_rect.colliderect(garden_rect):
+                    robot.collect_garden()
+                    if garden not in remove_these_gardens:
+                        remove_these_gardens.append(garden)
+
+        for garden in remove_these_gardens:
+            garden.remove()
+
+    def detect_and_act_on_robot_customer_collisions(self):
+        for robot in self.robots:
+            for customer in self.customers:
+                robot_rect = Rect(robot.x, robot.y, robot.sprite.get_width(), robot.sprite.get_height())
+                customer_rect = Rect(customer.x, customer.y, customer.sprite.get_width(), customer.sprite.get_height())
+                if robot_rect.colliderect(customer_rect):
+                    robot.sell_fruit()
 
 
-        
 
 
 
 
 
-        
+
+
+
+
 
 
 if __name__ == '__main__':

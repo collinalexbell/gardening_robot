@@ -1,0 +1,9 @@
+Ä}q(Ucustomer]q(UCustomerqUload_pygame_imgqeUtest_simulation_world]qUworldqaUgardenbotnn_test]q(Utest_nn_encode_dnaqUtest_edge_equalityq	Utest_calculate_stimulusq
+Utest_nn_decode_dnaqUtest_default_nn_creationqUtest_run_netqeUworld]q(Udetect_collisionqU)ten_robots_three_gardens_and_one_customerqUSCREEN_YqUSCREEN_XqUWorldqhUSPRT_RECT_XqUSPRT_RECT_YqU
+LEN_SPRT_XqU
+LEN_SPRT_YqeUos]q(Upopen4qUexecleqUpopen3qUSEEK_CURqUspawnlpqUexeclpqUenvironqUspawnvpq Uspawnlq!Uexecvpq"Umakedirsq#Ulinesepq$UP_WAITq%Uspawnvq&Uspawnveq'Uexecvpeq(Uunsetenvq)USEEK_SETq*Ugetenvq+Upopen2q,Uwalkq-Uspawnleq.Uexeclq/Unameq0USEEK_ENDq1Uspawnlpeq2U	P_NOWAITOq3UP_NOWAITq4U
+removedirsq5Urenamesq6Uspawnvpeq7Uexeclpeq8eU	hello_sdl]q9(UBLUEq:Urunq;Utest_team_initq<USoftwareRendererq=UPlayerq>UNUM_ON_FIELD_PER_TEAMq?UTeamq@UWHITEqAUREDqBeUrobot]qC(URobot_SpriteqDURobotqEheUgraphics_demo]qF(hhU	selectionqGUindexqHUdemoqIU
+robot_walkqJUdemosqKeUdatetime]qL(U	timedeltaqMUMAXYEARqNUdateqOUdatetime_CAPIqPUtzinfoqQUtimeqRUMINYEARqSUdatetimeqTeUgeometor]qUUGeometorqVaUtest_geometor]qWUtest_geometor_included_by_angleqXaU
+test_robot]qY(Utest_robot_creationqZUtest_robot_moveq[Utest_robot_sprite_classq\eU
+test_world]q](Utest_sense_gardensq^Utest_robot_initq_Utest_load_pygame_imageq`Utest_garden_in_worldqaeUgardenbotnn]qb(UdnaqcUnnetqdUGarden_Bot_EdgeqeUGarden_Bot_NNqfU
+mutate_dnaqgeUshutil]qh(UcopyfileqiUignore_patternsqjUcopytreeqkUget_archive_formatsqlUcopyfileobjqmUregister_archive_formatqnUcopymodeqoUmake_archiveqpUmoveqqUunregister_archive_formatqrUrmtreeqsUErrorqtUcopyquU	ExecErrorqvUcopy2qwUSpecialFileErrorqxUcopystatqyUWindowsErrorqzeUsimulation_world]q{(URobot_Entityq|h=hEUSprite_Positionsq}UBLACKq~UVelocityqUMovementSystemqÄUSimulation_WorldqÅeUgarden]qÇ(UGardenqÉheu.

@@ -8,11 +8,9 @@ def test_default_nn_creation():
     #Specific neurons must exist
     #Has neuron inputs on left, right, and front for sensing gardens.
     assert 'garden_left' in bot.neurons
-    assert 'garden_front' in bot.neurons
     assert 'garden_right' in bot.neurons
     #Has neuron inputs on left, right, and front for sensing customers
     assert 'customer_left' in bot.neurons
-    assert 'customer_front' in bot.neurons
     assert 'customer_right' in bot.neurons
     #Has neuron inputs for sensing how much food the bot has
     assert 'food_level' in bot.neurons
@@ -24,35 +22,46 @@ def test_default_nn_creation():
     #Clock input for neural updates
     assert 'clock' in bot.neurons
 
+    assert 'hidden1' in bot.neurons
+    assert 'hidden2' in bot.neurons
+
     #All neurons must have a type and value of 0
     for index, item in bot.neurons.items():
         assert 'type' in item
         assert item['value'] == 0
 
 
-    #Net has 8 input neurons with each with 3 randomized edges
-    assert len(bot.inputs) == 8
-    for o in bot.outputs:
-        assert len(o['in_edges']) == 8
+    #Net has 6 input neurons with each with 3 randomized edges
+    assert len(bot.inputs) == 6
+    for o in bot.outputs + bot.hidden:
+#       6 input & 2 hidden
+        if o in bot.outputs:
+            assert len(o['in_edges']) == 8
+        else:
+            assert len(o['in_edges']) == 6
         for e in o['in_edges']:
             assert type(e) == Garden_Bot_Edge
             assert e.weight > -1 and e.weight < 1
             assert e.speed > -1 and e.speed < 1
 
+
+
     #Each output neuron has a randomized threshold and exitation decay rate
-    for neuron in bot.outputs:
+    for neuron in bot.outputs + bot.hidden:
         assert neuron['decay'] > 0 and neuron['decay'] < 1
         assert neuron['threshold'] > 0 and neuron['threshold'] < 1
 
-
+#NEED TO FIX DNA ENCODING TO SHOW HIDDEN next to outputs
 def test_nn_encode_dna():
     #DNA will be an array of numbers
     #[[n1.threshhold, n1.decay, [[in1.weight, in1.speed]]]]
     bot = Garden_Bot_NN()
     dna = bot.encode_dna()
-    
-    #Iterate through the entire DNA
-    for index, neuron in enumerate(bot.outputs):
+    #print(dna)
+
+#   Iterate through the entire DNA
+#   Outputs first, then hidden, then inputs
+    for index, neuron in enumerate(bot.outputs + bot.hidden):
         assert type(dna[index]) == list
         assert dna[index][0] == neuron['threshold']
         assert dna[index][1] == neuron['decay']
@@ -93,7 +102,7 @@ def test_nn_decode_dna():
 def test_calculate_stimulus():
     dna = json.loads(open('zero_dna.json').read())
     bot = Garden_Bot_NN(dna)
-    
+
     #Select target output, compute stimulus and make sure it matches correct stimulus
 
     #Test the 0 case
@@ -148,13 +157,13 @@ def test_run_net():
     target_output['decay'] = .1
     bot.run_net()
     assert target_output['stimulus'] == .7
-    
+
 
     #Test that output of target_output is 1
     bot.outputs[0]['in_edges'][0].fr['output'] = 1
     bot.run_net()
     assert target_output['output'] == 1
-    
+
     #Assert that the neurons stimulus is 0 after neuron firing
     assert target_output['stimulus'] == 0
 
@@ -162,6 +171,6 @@ def test_run_net():
 
 
 
-      
+
 
 

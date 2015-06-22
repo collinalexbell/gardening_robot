@@ -21,13 +21,13 @@ class Garden_Bot_NN:
         self.neurons = {}
 
         #Has neuron inputs on left, right, and front for sensing gardens.
-        garden_sensors = ['garden_left', 'garden_front', 'garden_right']
+        garden_sensors = ['garden_left', 'garden_right']
         for sensor in garden_sensors:
             self.neurons[sensor] = {}
             self.neurons[sensor]['type'] = 'input'
 
         #Has neuron inputs on left, right, and front for sensing customers
-        customer_sensors = ['customer_left', 'customer_front', 'customer_right']
+        customer_sensors = ['customer_left', 'customer_right']
         for sensor in customer_sensors:
             self.neurons[sensor] = {}
             self.neurons[sensor]['type'] = 'input'
@@ -41,7 +41,7 @@ class Garden_Bot_NN:
         self.neurons['clock']['type'] = 'input'
 
         #Has output neuron on tail that fires to move forward
-        self.neurons['tail_motor'] = {} 
+        self.neurons['tail_motor'] = {}
         self.neurons['tail_motor']['type'] = 'output'
 
         #Has left and right output neuron to turn
@@ -50,9 +50,17 @@ class Garden_Bot_NN:
             self.neurons[motor] = {}
             self.neurons[motor]['type'] = 'output'
 
+#       Has hidden nuerons
+        hidden_neurons = ['hidden1', 'hidden2']
+        for neuron in hidden_neurons:
+            self.neurons[neuron] = {}
+            self.neurons[neuron]['type'] = 'hidden'
+
+
         #Create list of inputs and outputs
         self.inputs = []
         self.outputs = []
+        self.hidden = []
 
         for index, neuron in self.neurons.items():
             neuron['value'] = 0
@@ -60,10 +68,12 @@ class Garden_Bot_NN:
                 self.inputs.append(neuron)
             if neuron['type'] is 'output':
                 self.outputs.append(neuron)
+            if neuron['type'] is 'hidden':
+                self.hidden.append(neuron)
 
         #Fully connect the inputs to the outputs
         #print(dna)
-        for index, o in enumerate(self.outputs + self.inputs):
+        for index, o in enumerate(self.outputs + self.hidden + self.inputs):
             if(dna):
                 try:
                     o['decay'] = dna[index][1]
@@ -73,11 +83,17 @@ class Garden_Bot_NN:
                     print('dna @ index is {}'.format(dna[index]))
             else:
                 o['decay'] = random()
-                o['threshold'] = random() 
+                o['threshold'] = random()
             o['stimulus'] = 0
             o['output'] = 0
             o['in_edges'] = []
             if(o['type'] == 'output'):
+                for i_index, i in enumerate(self.hidden + self.inputs):
+                    if(dna):
+                        o['in_edges'].append(Garden_Bot_Edge(i,dna[index][2][i_index][0], dna[index][2][i_index][1]))
+                    else:
+                        o['in_edges'].append(Garden_Bot_Edge(i,(random()-.5)*2,(random()-.5)*2 ))
+            if(o['type'] == 'hidden'):
                 for i_index, i in enumerate(self.inputs):
                     if(dna):
                         o['in_edges'].append(Garden_Bot_Edge(i,dna[index][2][i_index][0], dna[index][2][i_index][1]))
@@ -89,7 +105,7 @@ class Garden_Bot_NN:
         dna = []
         #print(self.outputs)
         #print(self.outputs + self.inputs)
-        for index, neuron in enumerate(self.outputs + self.inputs):
+        for index, neuron in enumerate(self.outputs + self.hidden + self.inputs):
             #Each neuron gets its own list of dna attributes
             dna_neuron = []
             dna_neuron.append(neuron['threshold'])
@@ -108,7 +124,7 @@ class Garden_Bot_NN:
         for i, inp in enumerate(self.inputs):
             if 'output' not in inp:
                 raise KeyError('input {} does not have an output value'.format(i))
-        for index, neuron in enumerate(self.outputs + self.inputs):
+        for index, neuron in enumerate(self.outputs + self.hidden + self.inputs):
             #Decay the stimulus
             if neuron['stimulus'] > 0:
                 #print(neuron)
@@ -133,7 +149,7 @@ class Garden_Bot_NN:
 
 def mutate_dna(dna):
     percent_of_mutations = .005
-    alpha = .001
+    alpha = .002
     for neuron in dna:
         if random() < percent_of_mutations:
             print('mutation')
@@ -165,11 +181,11 @@ if __name__ == '__main__':
     mutate_dna(nnet.encode_dna())
 
 
-            
 
 
 
-            
 
-        
-        
+
+
+
+
