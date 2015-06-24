@@ -5,12 +5,41 @@ class Geometor:
     def __init__(self):
         self.origin = (0, 0)
 
+    def _tuple_is_usable(self, origin):
+        e_msg = 'param: Origin was not a len 2 tuple of numbers'
+        try:
+            obj_l_is_2 = len(origin) == 2
+            obj_is_tup = type(origin) == type((0,0))
+            el1_is_int = type(origin[0]) == type(0)
+            el2_is_int = type(origin[1]) == type(0)
+
+            if obj_l_is_2 and obj_is_tup and el1_is_int and el2_is_int:
+                return True
+            else:
+                raise Exception(e_msg)
+        except:
+            raise Exception(e_msg)
+
+
+
+    def get_origin(self):
+        return self.origin
+
+    def set_origin(self, origin):
+        """Sets origin for angle analisys"""
+        """origin:must be a tuple"""
+        """returns:1 if origin was set"""
+        self._tuple_is_usable(origin)
+
+        self.origin =  origin
+        return 1
+
+
     def is_in_angle(self, point, angle_range):
         """Returns True if point is in angle relative to origin"""
-#       Make points relative to origin
-        x_r_point = point[0] - self.origin[0]
-        y_r_point = point[1] - self.origin[1]
-        r_point = (x_r_point, y_r_point)
+        """point: a point in standard mathematical format"""
+        """angle_range angles the point can be in"""
+        r_point = self.originize_point(point)
 
 #       Get angle to relative to origin
         if r_point[0] == 0 and r_point[1] == 0:
@@ -40,3 +69,12 @@ class Geometor:
                 return True
             else:
                 return False
+
+    def originize_point(self, point):
+        self._tuple_is_usable(point)
+
+#       Make points relative to origin
+        x_r_point = point[0] - self.origin[0]
+        y_r_point = point[1] - self.origin[1]
+        r_point = (x_r_point, y_r_point)
+        return r_point

@@ -1,7 +1,7 @@
 from geometor import Geometor
 
 
-def test_geometor_included_by_angle():
+def test_geometor_is_in_angle():
 
     geo = Geometor()
 
@@ -21,7 +21,54 @@ def test_geometor_included_by_angle():
 #   This angle would be greater than 180 deg
     assert not geo.is_in_angle((1, 3), (90, 45))
     assert geo.is_in_angle((3, 1), (90, 45))
-
-#   also, negative points
-    assert geo.is_in_angle((-1, 3), (90, 135))
+#   also, negative points assert geo.is_in_angle((-1, 3), (90, 135))
     assert not geo.is_in_angle((-3, 1), (90, 135))
+
+def except_assert(func, params):
+    try:
+        func(*params)
+        assert False
+    except:
+        assert True
+
+def test_tuple_is_usable():
+    geo = Geometor()
+
+    #Test if origin is not a tuple
+    except_assert(geo._tuple_is_usable, ('s'))
+    except_assert(geo._tuple_is_usable, (5))
+
+    #Test if origin is not a tuple of numbers
+    except_assert(geo._tuple_is_usable, ((4,'s')))
+    except_assert(geo._tuple_is_usable, (('s',4)))
+    except_assert(geo._tuple_is_usable, ((True,False)))
+
+    #Test if origin is not len 2
+    except_assert(geo._tuple_is_usable, ((4,5,6)))
+
+
+def test_set_orgin():
+    geo = Geometor()
+#   Test if it checks input for correctness
+    except_assert(geo.set_origin, ('s'))
+
+    #Test if origin gets set if params are right
+    geo.set_origin((2,3))
+    assert geo.get_origin() == (2,3)
+
+def test_geometor_get_origin_based_points():
+    geo = Geometor()
+
+    #Pos, pos
+    geo.set_origin((5,5))
+
+    #Test that func checks input
+    except_assert(geo.originize_point, (6))
+
+    assert geo.originize_point((6,6)) == (1,1)
+    assert geo.originize_point((-5,6)) == (-10,1)
+    assert geo.originize_point((-5,-5)) == (-10,-10)
+
+
+
+
