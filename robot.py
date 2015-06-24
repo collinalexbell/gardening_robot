@@ -106,7 +106,6 @@ class Robot:
 
 
     def sense_garden(self, direction):
-        unit_direction = self.get_unit_direction(direction)
         gardens = self.world.get_gardens()
         sum = 0
         line_of_sight = 400
@@ -162,12 +161,10 @@ class Robot:
         #Garden Neurons
         self.nnet.neurons['garden_left']['stimulus'] += self.sense_garden('left')
         self.nnet.neurons['garden_right']['stimulus'] += self.sense_garden('right')
-        self.nnet.neurons['garden_front']['stimulus'] += self.sense_garden('front')
 
         #Customer Neurons
         self.nnet.neurons['customer_left']['stimulus'] += self.sense_customers('left')
         self.nnet.neurons['customer_right']['stimulus'] += self.sense_customers('right')
-        self.nnet.neurons['customer_front']['stimulus'] += self.sense_customers('front')
 
         #Fruit Level
         self.nnet.neurons['food_level']['stimulus'] += self.sense_fullness()
