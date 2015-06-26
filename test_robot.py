@@ -56,3 +56,13 @@ def test_robot_move():
     assert robot.real_x == 6.0
     print(robot.real_y)
     assert robot.real_y == 6.0
+
+#MAKE THESE PASS, AND THE SIMULATION MAY JUST WORK
+def test_sense_customers():
+    pass
+
+def test_sense_gardens():
+    pass
+
+def test_make_eye_angles():
+    pass

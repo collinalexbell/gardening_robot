@@ -2,10 +2,18 @@ import math
 
 
 class Geometor:
+    """Class used to do geometric manipulations"""
+
     def __init__(self):
         self.origin = (0, 0)
 
     def _tuple_is_usable(self, origin):
+        """Tests the tuple for errors
+
+            Returns: True if no error or throws Exception if error
+
+            Arguments: tup - a tuple to be tested
+        """
         e_msg = 'param: Origin was not a len 2 tuple of numbers'
         try:
             obj_l_is_2 = len(origin) == 2
@@ -26,19 +34,32 @@ class Geometor:
         return self.origin
 
     def set_origin(self, origin):
-        """Sets origin for angle analisys"""
-        """origin:must be a tuple"""
-        """returns:1 if origin was set"""
+        """Sets origin for angle analysis
+
+        Arguments:
+            origin:must be a tuple
+
+        Returns:
+            1 if origin was set
+            "Throws exception otherwise"""
+
+
         self._tuple_is_usable(origin)
 
         self.origin =  origin
         return 1
 
-
     def is_in_angle(self, point, angle_range):
-        """Returns True if point is in angle relative to origin"""
-        """point: a point in standard mathematical format"""
-        """angle_range angles the point can be in"""
+        """Tests if point is in area cut by angle at self.origin
+
+        Arguments:
+            point: a point in standard mathematical format
+            angle_range: a tuple of 2 angles that define the cut
+
+        Returns:
+            True if point is in angle cut
+            False if point is not in angle cut"""
+
         r_point = self.originize_point(point)
 
 #       Get angle to relative to origin
@@ -71,6 +92,14 @@ class Geometor:
                 return False
 
     def originize_point(self, point):
+        """Gets point relative to origin
+
+        Arguments:
+            point: length 2 tuple to convert
+
+        Returns point relative to origin """
+
+
         self._tuple_is_usable(point)
 
 #       Make points relative to origin

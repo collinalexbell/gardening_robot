@@ -11,6 +11,7 @@ from gardenbotnn import Garden_Bot_NN
 from gardenbotnn import mutate_dna
 from garden import Garden
 from customer import Customer
+from graphics_geometor import Geometor
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
@@ -58,6 +59,7 @@ class Robot_Sprite:
 class Robot:
     def __init__(self, x, y, world, robot = False):
         self.world = world
+        self.geometor = Graphics_Geometor()
         self.sprite_object = Robot_Sprite('ball_bot.png')
         self.sprite = self.sprite_object.get_sprite_at_angle(0)
         self.x = x
@@ -104,34 +106,27 @@ class Robot:
                 self.sell_fruit(collision[0])
         return self.money
 
-
-    def sense_garden(self, direction):
-        gardens = self.world.get_gardens()
+    def _sense_objects(self, objs, direction):
         sum = 0
         line_of_sight = 400
-        for garden in gardens:
-            x_distance = (garden.x-self.x) * unit_direction[0]
-            if x_distance > 0 and x_distance < line_of_sight:
-                sum +=  (math.pow(1 - x_distance/line_of_sight, 2))
-            y_distance = (garden.y-self.y) * unit_direction[1]
-            if y_distance > 0 and y_distance < line_of_sight:
-                sum +=  (math.pow(1 - y_distance/line_of_sight, 2))
+        for obj in objs:
+            robot_eye_angle = self.eye_angles[direction]
+            if geometor.is_in_angle((garden.x, garden.y)):
+                robot_point = (self.x, self.y)
+                obj_point = (obj.x, obj.y)
+                distance = geometor.get_distance(robot_point, obj_point)
+                sum +=  (math.pow(1 - distance/line_of_sight, 2))
         return sum
+
+
+    def sense_gardens(self, direction):
+        gardens = self.world.get_gardens()
+        return self._sense_objects(gardens,direction)
 
 
     def sense_customers(self, direction):
-        unit_direction = self.get_unit_direction(direction)
         customers = self.world.get_customers()
-        sum = 0
-        line_of_sight = 400
-        for customer in customers:
-            x_distance = (customer.x-self.x) * unit_direction[0]
-            if x_distance > 0:
-                sum +=  (math.pow(1 - x_distance/line_of_sight, 2))
-            y_distance = (customer.y-self.y) * unit_direction[1]
-            if y_distance > 0:
-                sum +=  (math.pow(1 - y_distance/line_of_sight, 2))
-        return sum
+        return self._sense_objects(customers, direction)
 
 
     def collect_garden(self):

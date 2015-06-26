@@ -69,6 +69,9 @@ def test_geometor_get_origin_based_points():
     assert geo.originize_point((-5,6)) == (-10,1)
     assert geo.originize_point((-5,-5)) == (-10,-10)
 
+def test_get_distance():
+    pass
+
 
 
 
