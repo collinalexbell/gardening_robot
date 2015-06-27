@@ -92,8 +92,8 @@ class Robot:
 #       Assuming that angles are on a standard x-y plane not a graphics plane
         y_step = math.sin(math.radians(self.direction_in_deg)) * step_length
         self.real_y -= y_step
-        self.x=int(self.real_x)
-        self.y=int(self.real_y)
+        self.x=int(self.real_x)%self.world.screenx
+        self.y=int(self.real_y)%self.world.screeny
 
     def turn(self, deg):
         self.direction_in_deg += deg

@@ -80,7 +80,7 @@ class Geometor:
 
 #       Test if that angle is between the range
         if((angle_range[0] - angle_range[1]) < 0):
-            print("In first if")
+            #print("In first if")
             if angle >= angle_range[0] and angle <= angle_range[1]:
                 return True
             else:
