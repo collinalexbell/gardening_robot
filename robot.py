@@ -129,8 +129,8 @@ class Robot:
         self.geometor.set_origin((self.x, self.y))
         for obj in objs:
             robot_eye_angle = self.eye_angles[direction]
-            print(robot_eye_angle)
-            print('{}, {}'.format(obj.x, obj.y))
+            #print(robot_eye_angle)
+            #print('{}, {}'.format(obj.x, obj.y))
             if self.geometor.is_in_angle((obj.x, obj.y), robot_eye_angle):
                 robot_point = (self.x, self.y)
                 obj_point = (obj.x, obj.y)
