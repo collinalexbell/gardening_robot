@@ -62,7 +62,35 @@ def test_sense_customers():
     pass
 
 def test_sense_gardens():
-    pass
+    world = World()
+    robot = Robot(0, 100, world)
+    world.add_garden(50, 100)
+
+    #Should be sensed by both eyes
+    assert robot.sense_gardens('left') > 0
+    assert robot.sense_gardens('right') > 0
+
+    robot.turn(-20)
+    assert robot.sense_gardens('left') > 0
+    assert robot.sense_gardens('right') == 0
 
 def test_make_eye_angles():
-    pass
+    world = World()
+    robot = Robot(5, 5, world)
+
+    robot.turn(-360)
+    robot._make_eye_angles()
+    #Start out at 0 therefore eye angles are
+    assert robot.eye_angles['left'] == (350,50)
+    assert robot.eye_angles['right'] == (310, 10)
+
+    robot.turn(30)
+    robot._make_eye_angles()
+
+    assert robot.eye_angles['left'] == (20, 80)
+    assert robot.eye_angles['right'] == (340, 40)
+
+
+
+
+

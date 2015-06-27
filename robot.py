@@ -11,7 +11,7 @@ from gardenbotnn import Garden_Bot_NN
 from gardenbotnn import mutate_dna
 from garden import Garden
 from customer import Customer
-from graphics_geometor import Geometor
+from graphics_geometor import Graphics_Geometor
 
 def load_pygame_img(file_name):
     """Load img is a function that uses PIL to load a pygame image"""
@@ -76,6 +76,9 @@ class Robot:
         self.money = 0
         self.CARRYING_CAPACITY = 2
         self.unique_locations = set()
+        self.deg_eye_sep = 40
+        self.deg_eye_focal = 60
+        self._make_eye_angles()
 
 
     def load_dna(self, dna):
@@ -94,8 +97,10 @@ class Robot:
 
     def turn(self, deg):
         self.direction_in_deg += deg
+        self.direction_in_deg = self.direction_in_deg % 360
         new_deg = self.direction_in_deg
         self.sprite = self.sprite_object.get_sprite_at_angle(new_deg)
+        self._make_eye_angles()
 
 
     def on_customer(self, collisions):
@@ -106,15 +111,30 @@ class Robot:
                 self.sell_fruit(collision[0])
         return self.money
 
+    def _make_eye_angles(self):
+        self.eye_angles = {}
+        dir = self.direction_in_deg
+        right_eye_min = dir - (self.deg_eye_sep/2) - (self.deg_eye_focal/2)
+        right_eye_max = dir - (self.deg_eye_sep/2) + (self.deg_eye_focal/2)
+
+        left_eye_min = dir + (self.deg_eye_sep/2) - (self.deg_eye_focal/2)
+        left_eye_max = dir + (self.deg_eye_sep/2) + (self.deg_eye_focal/2)
+
+        self.eye_angles['left'] = (left_eye_min%360, left_eye_max%360)
+        self.eye_angles['right'] = (right_eye_min%360, right_eye_max%360)
+
     def _sense_objects(self, objs, direction):
         sum = 0
         line_of_sight = 400
+        self.geometor.set_origin((self.x, self.y))
         for obj in objs:
             robot_eye_angle = self.eye_angles[direction]
-            if geometor.is_in_angle((garden.x, garden.y)):
+            print(robot_eye_angle)
+            print('{}, {}'.format(obj.x, obj.y))
+            if self.geometor.is_in_angle((obj.x, obj.y), robot_eye_angle):
                 robot_point = (self.x, self.y)
                 obj_point = (obj.x, obj.y)
-                distance = geometor.get_distance(robot_point, obj_point)
+                distance = self.geometor.get_distance(robot_point, obj_point)
                 sum +=  (math.pow(1 - distance/line_of_sight, 2))
         return sum
 
@@ -154,8 +174,8 @@ class Robot:
         self.nnet.neurons['clock']['stimulus'] = self.nnet.neurons['clock']['threshold'] + 1
 
         #Garden Neurons
-        self.nnet.neurons['garden_left']['stimulus'] += self.sense_garden('left')
-        self.nnet.neurons['garden_right']['stimulus'] += self.sense_garden('right')
+        self.nnet.neurons['garden_left']['stimulus'] += self.sense_gardens('left')
+        self.nnet.neurons['garden_right']['stimulus'] += self.sense_gardens('right')
 
         #Customer Neurons
         self.nnet.neurons['customer_left']['stimulus'] += self.sense_customers('left')

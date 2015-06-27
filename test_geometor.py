@@ -1,4 +1,5 @@
 from geometor import Geometor
+import math
 
 
 def test_geometor_is_in_angle():
@@ -23,6 +24,9 @@ def test_geometor_is_in_angle():
     assert geo.is_in_angle((3, 1), (90, 45))
 #   also, negative points assert geo.is_in_angle((-1, 3), (90, 135))
     assert not geo.is_in_angle((-3, 1), (90, 135))
+
+    assert geo.is_in_angle((1,0), (-20, 20))
+    assert not geo.is_in_angle((1,0), (20, -20))
 
 def except_assert(func, params):
     try:
@@ -70,8 +74,16 @@ def test_geometor_get_origin_based_points():
     assert geo.originize_point((-5,-5)) == (-10,-10)
 
 def test_get_distance():
-    pass
+    geo = Geometor()
 
+    #Lests start off easy
+    assert geo.get_distance((0,0),(1,0)) == 1
+
+    assert geo.get_distance((0,0),(1,1)) == math.sqrt(2)
+
+    assert geo.get_distance((1,1),(4,5)) == 5
+
+    assert geo.get_distance((4,5),(1,1)) == 5
 
 
 

@@ -107,3 +107,17 @@ class Geometor:
         y_r_point = point[1] - self.origin[1]
         r_point = (x_r_point, y_r_point)
         return r_point
+
+    def get_distance(self, point1, point2):
+        x_dist = abs(point1[0] - point2[0])
+        y_dist = abs(point1[1] - point2[1])
+
+        x2 = math.pow(x_dist,2)
+        y2 = math.pow(y_dist,2)
+
+        dist = math.sqrt(x2 + y2)
+        return dist
+
+
+
+
