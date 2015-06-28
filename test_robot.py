@@ -90,6 +90,20 @@ def test_make_eye_angles():
     assert robot.eye_angles['left'] == (20, 80)
     assert robot.eye_angles['right'] == (340, 40)
 
+def test_constructor_with_mutate():
+   pass
+
+def test_age_robot():
+    pass
+
+def test_get_ancestors():
+    pass
+
+def test_make_id():
+
+
+
+
 
 
 

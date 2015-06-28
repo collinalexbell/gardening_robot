@@ -190,7 +190,7 @@ class World:
         self.robots = []
 
         for robot in winners:
-            self.robots.append(Robot(robot, 'copy'))
+            self.robots.append(robot.age())
 
         for i in range(len_bots-len(winners)):
             #Select robot randomly
@@ -198,6 +198,7 @@ class World:
             self.robots.append(selected, 'mutate')
 
         world.gardens = []
+
 
 
 
