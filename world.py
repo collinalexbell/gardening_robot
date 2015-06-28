@@ -152,6 +152,9 @@ class World:
     def get_customers(self):
         return self.customers
 
+    def get_robots(self):
+        return self.robots
+
     def add_robot(self, x, y, robot = 0):
         if robot:
             new_robot = robot
