@@ -162,40 +162,44 @@ class World:
             new_robot = Robot(x,y,self)
         self.robots.append(new_robot)
 
-
-    def mutate_robots(self):
-        #Save top 50% and mutate the rest
-        top_robots = {}
-        scores = []
+    def next_gen(self, percentage):
+        scored_robots = {}
         for robot in self.robots:
-            try:
-                top_robots[str(robot.get_fitness())].append(robot)
-            except:
-                top_robots[str(robot.get_fitness())] = [robot]
-            scores.append(robot.get_fitness())
-        robots_to_keep = []
-        scores = sorted(scores)
-        scores = scores[::-1]
-        scores = scores[:3]
-        print(scores)
-        for score in scores:
-            robots_to_keep.append(top_robots[str(score)].pop(0))
-        self.robots = []
-        for robot in robots_to_keep:
-            new_bot = Robot(0,0,self)
-            new_bot.load_dna(robot.nnet.encode_dna())
-            self.add_robot(0,0, new_bot)
-        print('fromKeep {}'.format(len(self.robots)))
-        for robot in robots_to_keep:
-            for i in range(8):
-                self.robots.append(Robot(0,0,self,robot))
-        self.time = time.time()
-        for i in range(3):
-            self.add_robot(0,0)
-        for garden in self.gardens:
-            garden.remove()
+            score = robot.get_fitness()
+            if score in scored_robots.keys():
+                scored_robots[score].append(robot)
+            else:
+                scored_robots[score] = [robot]
 
-        print('afterKeep {}'.format(len(self.robots)))
+        winners = []
+
+        #Start with highest scoring robot
+        class BreakIt(Exception): pass
+        try:
+            for score_set in reversed(sorted(scored_robots)):
+                for robot in scored_robots[score_set]:
+                    if len(robot) < len(self.robots) * percentage/100:
+                        winners.append(robot)
+                    else:
+                        raise BreakIt
+        except Breakit:
+            pass
+
+        len_bots = len(self.robots)
+
+        self.robots = []
+
+        for robot in winners:
+            self.robots.append(Robot(robot, 'copy'))
+
+        for i in range(len_bots-len(winners)):
+            #Select robot randomly
+            selected = random.choice(winners)
+            self.robots.append(selected, 'mutate')
+
+        world.gardens = []
+
+
 
     def detect_and_act_on_robot_garden_collisions(self):
         remove_these_gardens = []
