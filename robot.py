@@ -70,7 +70,8 @@ class Robot:
         self.direction_in_deg = 0
         if robot:
             self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
-        self.nnet = Garden_Bot_NN()
+        else:
+            self.nnet = Garden_Bot_NN()
         self.num_of_fruit = 0
         self.num_of_fruit_ever = 0
         self.money = 0
