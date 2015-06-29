@@ -43,6 +43,8 @@ def ten_robots_three_gardens_and_one_customer():
     for i in range(30):
         world.add_robot(0,0)
     world.add_garden(400, 200)
+    world.add_garden(400, 600)
+    world.add_garden(100, 400)
     world.add_customer(800, 600)
     world.add_customer(200,200)
     world.add_customer(800, 100)
@@ -84,7 +86,6 @@ class World:
         self.running = True
         self.time = time.time()
         while self.running:
-            self.clock.tick(60)
             self.screen.fill((0,0,0))
             self.handle_events()
             processes = []
@@ -107,7 +108,7 @@ class World:
             for robot in self.robots[0:10]:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
-            if time.time() - self.time >= 60:
+            if time.time() - self.time >= 20:
                 self.mutate_robots()
                 self.time = time.time()
 

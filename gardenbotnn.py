@@ -148,8 +148,8 @@ class Garden_Bot_NN:
 
 
 def mutate_dna(dna):
-    percent_of_mutations = .005
-    alpha = .002
+    percent_of_mutations = .6
+    alpha = .2
     for neuron in dna:
         if random() < percent_of_mutations:
             print('mutation')
