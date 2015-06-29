@@ -76,9 +76,13 @@ class Robot:
         self.ancestors = []
         if robot:
             self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
+<<<<<<< HEAD
             self.ancestors = self.ancestors + (robot.ancestors + [robot.id])
         else:
             #OMG I cant believe I had this bug
+=======
+        else:
+>>>>>>> c4bd81446abf46bbba653ff178741a630096ef57
             self.nnet = Garden_Bot_NN()
         self.num_of_fruit = 0
         self.num_of_fruit_ever = 0
