@@ -178,7 +178,7 @@ if __name__ == '__main__':
     dna = nnet.encode_dna()
     print(dna)
     print('\n\n')
-    mutate_dna(nnet.encode_dna())
+    print(mutate_dna(nnet.encode_dna()))
 
 
 

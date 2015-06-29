@@ -1,4 +1,5 @@
 import os, sys, math, queue
+import random
 from PIL import Image
 import pygame_sdl2
 pygame_sdl2.import_as_pygame()
@@ -109,7 +110,7 @@ class World:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
             if time.time() - self.time >= 20:
-                self.mutate_robots()
+                self.next_gen(30)
                 self.time = time.time()
 
 
@@ -120,7 +121,6 @@ class World:
 
                 # handle user input
                 elif event.type == pygame.KEYDOWN:
-                    print('keydown')
                     # if the user presses escape, quit the event loop.
                     if(len(self.robots) > 0):
                         if event.key == pygame.K_ESCAPE:
@@ -133,9 +133,8 @@ class World:
                             self.robots[0].turn(10)
                         if event.key == pygame.K_d:
                             self.robots[0].turn(-10)
-                            print('right')
                         if event.key == pygame.K_m:
-                            self.mutate_robots()
+                            self.next_gen(30)
                         if event.key == pygame.K_SPACE:
                             self.robots[0].move(10)
 
@@ -153,6 +152,9 @@ class World:
     def get_customers(self):
         return self.customers
 
+    def get_robots(self):
+        return self.robots
+
     def add_robot(self, x, y, robot = 0):
         if robot:
             new_robot = robot
@@ -160,40 +162,46 @@ class World:
             new_robot = Robot(x,y,self)
         self.robots.append(new_robot)
 
-
-    def mutate_robots(self):
-        #Save top 50% and mutate the rest
-        top_robots = {}
-        scores = []
+    def next_gen(self, percentage):
+        scored_robots = {}
         for robot in self.robots:
-            try:
-                top_robots[str(robot.get_fitness())].append(robot)
-            except:
-                top_robots[str(robot.get_fitness())] = [robot]
-            scores.append(robot.get_fitness())
-        robots_to_keep = []
-        scores = sorted(scores)
-        scores = scores[::-1]
-        scores = scores[:3]
-        print(scores)
-        for score in scores:
-            robots_to_keep.append(top_robots[str(score)].pop(0))
+            score = robot.get_fitness()
+            if score in scored_robots.keys():
+                scored_robots[score].append(robot)
+            else:
+                scored_robots[score] = [robot]
+
+        winners = []
+
+        #Start with highest scoring robot
+        class BreakIt(Exception): pass
+        try:
+            for score_set in reversed(sorted(scored_robots)):
+                for robot in scored_robots[score_set]:
+                    if len(winners) < len(self.robots) * percentage/100:
+                        winners.append(robot)
+                    else:
+                        raise BreakIt
+        except BreakIt:
+            pass
+
+        len_bots = len(self.robots)
+
         self.robots = []
-        for robot in robots_to_keep:
-            new_bot = Robot(0,0,self)
-            new_bot.load_dna(robot.nnet.encode_dna())
-            self.add_robot(0,0, new_bot)
-        print('fromKeep {}'.format(len(self.robots)))
-        for robot in robots_to_keep:
-            for i in range(8):
-                self.robots.append(Robot(0,0,self,robot))
-        self.time = time.time()
-        for i in range(3):
-            self.add_robot(0,0)
+
+        for robot in winners:
+            self.robots.append(robot.age())
+
+        for i in range(len_bots-len(winners)):
+            #Select robot randomly
+            selected = random.choice(winners)
+            self.robots.append(Robot(0,0,self, selected))
+
         for garden in self.gardens:
             garden.remove()
 
-        print('afterKeep {}'.format(len(self.robots)))
+
+
 
     def detect_and_act_on_robot_garden_collisions(self):
         remove_these_gardens = []
