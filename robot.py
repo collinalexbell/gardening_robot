@@ -1,4 +1,6 @@
 import os
+import json
+import uuid
 import sys
 import math
 import queue
@@ -58,19 +60,26 @@ class Robot_Sprite:
 
 class Robot:
     def __init__(self, x, y, world, robot = False):
+        self.id = str(uuid.uuid4())
         self.world = world
         self.geometor = Graphics_Geometor()
         self.sprite_object = Robot_Sprite('ball_bot.png')
         self.sprite = self.sprite_object.get_sprite_at_angle(0)
+        self.init_x = x
+        self.init_y = y
         self.x = x
         self.y = y
         self.real_x = float(x)
         self.real_y = float(y)
         self.blit_queue = queue.Queue()
         self.direction_in_deg = 0
+        self.ancestors = []
         if robot:
             self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
-        self.nnet = Garden_Bot_NN()
+            self.ancestors += robot.ancestors + [robot.id]
+        else:
+            #OMG I cant believe I had this bug
+            self.nnet = Garden_Bot_NN()
         self.num_of_fruit = 0
         self.num_of_fruit_ever = 0
         self.money = 0
@@ -80,9 +89,22 @@ class Robot:
         self.deg_eye_focal = 60
         self._make_eye_angles()
 
+    def age(self):
+        self.x = self.init_x
+        self.y = self.init_y
+
+        return self
+
 
     def load_dna(self, dna):
         self.nnet = Garden_Bot_NN(dna)
+
+    def save_dna(self, prefix = ''):
+        with open('./dna/' + prefix +'.' + self.id + '.dna', 'w+') as dna_file:
+            dna_file.write(json.dumps(self.nnet.encode_dna(),
+                                      sort_keys=True,
+                                      indent=4, separators=(',', ': ')))
+
 
 
     def move(self, step_length):

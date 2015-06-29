@@ -1,3 +1,4 @@
+import time
 from robot import Robot
 from world import World
 from robot import Robot_Sprite
@@ -91,16 +92,40 @@ def test_make_eye_angles():
     assert robot.eye_angles['right'] == (340, 40)
 
 def test_constructor_with_mutate():
-   pass
+    #This test has no asserts. Instead, for now, I must manually check DNA
+    #manually to make sure it does not differ to greatly
 
-def test_age_robot():
-    pass
+    world = World()
+    robot = Robot(0,0,world)
+    mutated_robot = Robot(0,0,world, robot)
+    t = time.time()
+    robot.save_dna('1test_time_' + str(t))
+    mutated_robot.save_dna('2test_time_' + str(t))
+
+def test_age():
+    world = World()
+    robot = Robot(0,0,world)
+    robot.move(20)
+    assert robot.x != 0
+    robot = robot.age()
+    assert robot.x == 0
 
 def test_get_ancestors():
     pass
 
-def test_make_id():
-    pass
+def test_has_uuid():
+    robots = []
+    for i in range(50):
+        world = World()
+        robots.append(Robot(0,0,world))
+
+    #Iterate through all robots and test that they all have unique ids
+
+    for robot in robots:
+        for other_robot in robots:
+            if other_robot is not robot:
+                assert robot.id != other_robot.id
+
 
 
 
