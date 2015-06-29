@@ -76,7 +76,7 @@ class Robot:
         self.ancestors = []
         if robot:
             self.nnet = Garden_Bot_NN(mutate_dna(robot.nnet.encode_dna()))
-            self.ancestors += robot.ancestors + [robot.id]
+            self.ancestors = self.ancestors + (robot.ancestors + [robot.id])
         else:
             #OMG I cant believe I had this bug
             self.nnet = Garden_Bot_NN()
@@ -90,8 +90,12 @@ class Robot:
         self._make_eye_angles()
 
     def age(self):
-        self.x = self.init_x
-        self.y = self.init_y
+        self.x = 0
+        self.y = 0
+        self.real_x = 0
+        self.real_y = 0
+        self.num_of_fruit = 0
+        self.num_of_fruit_ever = 0
 
         return self
 
@@ -105,6 +109,9 @@ class Robot:
                                       sort_keys=True,
                                       indent=4, separators=(',', ': ')))
 
+
+    def get_ancestors(self):
+        return self.ancestors
 
 
     def move(self, step_length):

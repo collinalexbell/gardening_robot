@@ -1,4 +1,5 @@
 import os, sys, math, queue
+import random
 from PIL import Image
 import pygame_sdl2
 pygame_sdl2.import_as_pygame()
@@ -107,8 +108,8 @@ class World:
             for robot in self.robots[0:10]:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
-            if time.time() - self.time >= 60:
-                self.mutate_robots()
+            if time.time() - self.time >= 20:
+                self.next_gen(30)
                 self.time = time.time()
 
 
@@ -119,7 +120,6 @@ class World:
 
                 # handle user input
                 elif event.type == pygame.KEYDOWN:
-                    print('keydown')
                     # if the user presses escape, quit the event loop.
                     if(len(self.robots) > 0):
                         if event.key == pygame.K_ESCAPE:
@@ -132,9 +132,8 @@ class World:
                             self.robots[0].turn(10)
                         if event.key == pygame.K_d:
                             self.robots[0].turn(-10)
-                            print('right')
                         if event.key == pygame.K_m:
-                            self.mutate_robots()
+                            self.next_gen(30)
                         if event.key == pygame.K_SPACE:
                             self.robots[0].move(10)
 
@@ -178,11 +177,11 @@ class World:
         try:
             for score_set in reversed(sorted(scored_robots)):
                 for robot in scored_robots[score_set]:
-                    if len(robot) < len(self.robots) * percentage/100:
+                    if len(winners) < len(self.robots) * percentage/100:
                         winners.append(robot)
                     else:
                         raise BreakIt
-        except Breakit:
+        except BreakIt:
             pass
 
         len_bots = len(self.robots)
@@ -195,9 +194,10 @@ class World:
         for i in range(len_bots-len(winners)):
             #Select robot randomly
             selected = random.choice(winners)
-            self.robots.append(selected, 'mutate')
+            self.robots.append(Robot(0,0,self, selected))
 
-        world.gardens = []
+        for garden in self.gardens:
+            garden.remove()
 
 
 

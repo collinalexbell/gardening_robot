@@ -111,7 +111,14 @@ def test_age():
     assert robot.x == 0
 
 def test_get_ancestors():
-    pass
+    world = World()
+    robot = Robot(0,0, world)
+    robot2 = Robot(0,0,world, robot)
+    robot3 = Robot(0,0,world, robot2)
+
+    ancestors = robot3.get_ancestors()
+
+    assert ancestors == [robot.id] + [robot2.id]
 
 def test_has_uuid():
     robots = []
