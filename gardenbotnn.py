@@ -148,7 +148,7 @@ class Garden_Bot_NN:
 
 
 def mutate_dna(dna):
-    percent_of_mutations = .005
+    percent_of_mutations = .02
     alpha = .002
     for neuron in dna:
         if random() < percent_of_mutations:
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     dna = nnet.encode_dna()
     print(dna)
     print('\n\n')
-    mutate_dna(nnet.encode_dna())
+    print(mutate_dna(nnet.encode_dna()))
 
 
 
