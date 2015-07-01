@@ -87,6 +87,7 @@ class Robot:
         self.deg_eye_sep = 40
         self.deg_eye_focal = 60
         self._make_eye_angles()
+        self.last_garden = False
 
     def age(self):
         self.x = 0
@@ -177,9 +178,10 @@ class Robot:
         return self._sense_objects(customers, direction)
 
 
-    def collect_garden(self):
+    def collect_garden(self, garden):
         self.num_of_fruit += 1
         self.num_of_fruit_ever += 1
+        self.last_garden = garden
 
 
     def sell_fruit(self):
@@ -240,6 +242,9 @@ class Robot:
 
     def get_fitness(self):
         return  self.num_of_fruit_ever + self.money
+
+    def get_last_garden(self):
+        return self.last_garden
 
 
 

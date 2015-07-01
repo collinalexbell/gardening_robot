@@ -139,7 +139,7 @@ class World:
                             self.robots[0].move(10)
 
     def add_garden(self, x, y):
-        new_garden = Garden(x,y, self)
+        new_garden = Garden(x,y, self, config_file = 'config.json')
         self.gardens.append(new_garden)
 
     def get_gardens(self):
@@ -210,8 +210,10 @@ class World:
                 robot_rect = Rect(robot.x, robot.y, robot.sprite.get_width(), robot.sprite.get_height())
                 garden_rect = Rect(garden.x, garden.y, garden.sprite.get_width(), garden.sprite.get_height())
                 if robot_rect.colliderect(garden_rect):
-                    robot.collect_garden()
-                    if garden not in remove_these_gardens:
+                    if robot.get_last_garden() != garden:
+                        if garden.harvest():
+                            robot.collect_garden(garden)
+                    if garden.is_fully_harvested() and garden not in remove_these_gardens:
                         remove_these_gardens.append(garden)
 
         for garden in remove_these_gardens:
