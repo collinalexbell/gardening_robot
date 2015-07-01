@@ -38,6 +38,19 @@ LEN_SPRT_Y=100
 #This is the length of the sprite
 
 
+def make_background():
+    backdrop = pygame.Rect(0, 0, SCREEN_X, SCREEN_Y) #Create the whole screen so you can draw on it
+    bk_image = pygame.Surface([SCREEN_X,SCREEN_Y])
+    bk_image = bk_image.convert_alpha()
+    img = load_pygame_img('floor_texture_small.jpg')
+    for i in range(math.ceil(SCREEN_X/img.get_width())):
+        for j in range(math.ceil(SCREEN_Y/img.get_height())):
+            x = i * img.get_width()
+            y = j * img.get_height()
+            bk_image.blit(img, (x, y), backdrop)
+    return bk_image
+
+
 
 def ten_robots_three_gardens_and_one_customer():
     world = World()
@@ -76,6 +89,7 @@ class World:
         self.customers = []
         self.screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y)) #Create the screen
         self.objects = []
+        self.background = make_background()
 
         self.backdrop = pygame.Rect(0, 0, SCREEN_X, SCREEN_Y) #Create the whole screen so you can draw on it
         self.clock = pygame.time.Clock()
@@ -87,7 +101,7 @@ class World:
         self.running = True
         self.time = time.time()
         while self.running:
-            self.screen.fill((0,0,0))
+            self.screen.blit(self.background, (0,0), self.backdrop)
             self.handle_events()
             processes = []
             for garden in (self.gardens + self.customers):
