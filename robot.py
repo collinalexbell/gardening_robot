@@ -80,9 +80,8 @@ class Robot:
         else:
             self.nnet = Garden_Bot_NN()
         self.num_of_fruit = 0
-        self.num_of_fruit_ever = 0
         self.money = 0
-        self.CARRYING_CAPACITY = 2
+        self.CARRYING_CAPACITY = 1
         self.unique_locations = set()
         self.deg_eye_sep = 40
         self.deg_eye_focal = 60
@@ -95,7 +94,6 @@ class Robot:
         self.real_x = 0
         self.real_y = 0
         self.num_of_fruit = 0
-        self.num_of_fruit_ever = 0
 
         return self
 
@@ -179,9 +177,12 @@ class Robot:
 
 
     def collect_garden(self, garden):
-        self.num_of_fruit += 1
-        self.num_of_fruit_ever += 1
-        self.last_garden = garden
+        if self.num_of_fruit < self.CARRYING_CAPACITY:
+            self.num_of_fruit += 1
+            self.last_garden = garden
+            return True
+        else:
+            return False
 
 
     def sell_fruit(self):
@@ -241,7 +242,7 @@ class Robot:
 
 
     def get_fitness(self):
-        return  self.num_of_fruit_ever + self.money
+        return  self.num_of_fruit + self.money
 
     def get_last_garden(self):
         return self.last_garden

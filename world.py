@@ -211,8 +211,8 @@ class World:
                 garden_rect = Rect(garden.x, garden.y, garden.sprite.get_width(), garden.sprite.get_height())
                 if robot_rect.colliderect(garden_rect):
                     if robot.get_last_garden() != garden:
-                        if garden.harvest():
-                            robot.collect_garden(garden)
+                        if robot.collect_garden(garden):
+                            garden.harvest()
                     if garden.is_fully_harvested() and garden not in remove_these_gardens:
                         remove_these_gardens.append(garden)
 
