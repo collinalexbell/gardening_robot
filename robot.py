@@ -152,7 +152,7 @@ class Robot:
 
     def _sense_objects(self, objs, direction):
         sum = 0
-        line_of_sight = 400
+        line_of_sight = 1200
         self.geometor.set_origin((self.x, self.y))
         for obj in objs:
             robot_eye_angle = self.eye_angles[direction]

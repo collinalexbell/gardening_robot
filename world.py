@@ -124,7 +124,7 @@ class World:
                 self.screen.blit(robot.sprite, (robot.x, robot.y), self.backdrop)
             pygame.display.flip()
             if time.time() - self.time >= 20:
-                self.next_gen(30)
+                self.next_gen(60)
                 self.time = time.time()
 
 

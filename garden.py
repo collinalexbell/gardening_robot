@@ -65,7 +65,7 @@ class Garden:
         self._load_config(data)
 
     def is_fully_harvested(self):
-        print('{},{}'.format(self.used, self.capacity))
+        #print('{},{}'.format(self.used, self.capacity))
         if self.used >= self.capacity:
             return True
         else:
